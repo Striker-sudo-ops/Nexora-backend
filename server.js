@@ -9,7 +9,10 @@ const chatRoutes = require('./routes/chatRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://nexora-frontend-five.vercel.app",
+  credentials: true
+}));
 app.use(express.json()); // to accept JSON data
 
 // Routes
@@ -31,7 +34,7 @@ const server = app.listen(PORT, console.log(`Server running on PORT ${PORT}`));
 const io = require('socket.io')(server, {
   pingTimeout: 60000,
   cors: {
-    origin: 'http://localhost:5173', // Vite default port
+    origin: 'https://nexora-frontend-five.vercel.app', // Vite default port
   },
 });
 
