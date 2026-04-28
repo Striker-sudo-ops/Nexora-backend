@@ -17,16 +17,16 @@ const extractPublicId = (url) => {
     const splitUrl = url.split('/upload/');
     if (splitUrl.length < 2) return null;
     let path = splitUrl[1];
-    
+
     if (path.match(/^v\d+\//)) {
       path = path.substring(path.indexOf('/') + 1);
     }
-    
+
     const lastDotIndex = path.lastIndexOf('.');
     if (lastDotIndex !== -1) {
       path = path.substring(0, lastDotIndex);
     }
-    
+
     return path;
   } catch (error) {
     console.error("Error extracting public ID:", error);
@@ -49,7 +49,7 @@ const sendMessage = async (req, res) => {
     mediaUrl: mediaUrl || '',
     mediaType: mediaType || '',
   };
-  
+
   if (replyTo) {
     newMessage.replyTo = replyTo;
   }
@@ -74,7 +74,7 @@ const sendMessage = async (req, res) => {
     });
 
     // Update latestMessage and clear deletedBy array so it reappears for anyone who deleted it
-    await Chat.findByIdAndUpdate(req.body.chatId, { 
+    await Chat.findByIdAndUpdate(req.body.chatId, {
       latestMessage: message,
       $set: { deletedBy: [] } // Clear deletedBy
     });
@@ -88,7 +88,7 @@ const sendMessage = async (req, res) => {
 
 const allMessages = async (req, res) => {
   try {
-    const messages = await Message.find({ 
+    const messages = await Message.find({
       chat: req.params.chatId,
       deletedBy: { $ne: req.user._id }
     })
@@ -344,7 +344,7 @@ const generateSmartReplies = async (req, res) => {
 
     const result = await model.generateContent(prompt);
     let text = result.response.text().trim();
-    
+
     // Attempt to parse JSON safely
     if (text.startsWith('\`\`\`json')) {
       text = text.substring(7, text.length - 3);
@@ -353,7 +353,7 @@ const generateSmartReplies = async (req, res) => {
     }
 
     const replies = JSON.parse(text);
-    
+
     if (Array.isArray(replies)) {
       res.json({ replies: replies.slice(0, 3) });
     } else {
