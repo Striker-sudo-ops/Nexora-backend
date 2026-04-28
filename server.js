@@ -14,7 +14,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json()); // to accept JSON data
-
+app.set("trust proxy", 1);
 // Routes
 app.use('/api/user', userRoutes);
 app.use('/api/chat', chatRoutes);
@@ -34,7 +34,8 @@ const server = app.listen(PORT, console.log(`Server running on PORT ${PORT}`));
 const io = require('socket.io')(server, {
   pingTimeout: 60000,
   cors: {
-    origin: 'https://nexora-frontend-five.vercel.app', // Vite default port
+    origin: 'https://nexora-frontend-five.vercel.app',                   // Vite default port
+    credentials: true, 
   },
 });
 
@@ -107,7 +108,7 @@ io.on('connection', (socket) => {
 
   socket.off('setup', () => {
     console.log('USER DISCONNECTED');
-    if (userData) socket.leave(userData._id);
+    
   });
 });
 
