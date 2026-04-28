@@ -283,7 +283,7 @@ const summarizeMessage = async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Please summarize the following message into a few very concise key bullet points.\n\nMessage:\n"${textToSummarize}"`;
 
@@ -338,7 +338,7 @@ const generateSmartReplies = async (req, res) => {
 
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Based on the following received message, generate 3 short, distinct, and natural-sounding quick replies (max 4-5 words each). Return ONLY a valid JSON array of strings containing the replies. Example: ["Sounds good!", "I'll check it out.", "Thanks!"]\n\nMessage:\n"${content}"`;
 
