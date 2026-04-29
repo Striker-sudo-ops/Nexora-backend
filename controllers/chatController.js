@@ -273,8 +273,11 @@ const sendGroupEmail = async (req, res) => {
       if (emails.length === 0) return res.status(200).json({ message: 'No other users in group to email' });
 
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+        tls: { rejectUnauthorized: false }
       });
 
       const mailOptions = {
@@ -320,8 +323,11 @@ const sendGroupEmail = async (req, res) => {
 
       if (adminEmails.length > 0) {
         const transporter = nodemailer.createTransport({
-          service: 'gmail',
+          host: 'smtp.gmail.com',
+          port: 587,
+          secure: false,
           auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+          tls: { rejectUnauthorized: false }
         });
 
         const mailOptions = {
@@ -383,8 +389,11 @@ const approveGroupEmail = async (req, res) => {
     let emailMessage = null;
     if (emails.length > 0) {
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+        tls: { rejectUnauthorized: false }
       });
 
       const mailOptions = {
