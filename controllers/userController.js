@@ -7,7 +7,8 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const registerUser = async (req, res) => {
   const { name, email, mobile, password, pic } = req.body;
@@ -33,23 +34,9 @@ const registerUser = async (req, res) => {
   const otp = generateOTP();
   const otpExpires = new Date(Date.now() + 10 * 60000); // OTP expires in 10 minutes
 
-  // Set up NodeMailer transporter
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to: email,
+    from: process.env.EMAIL_USER,
     subject: 'Welcome to Chatify - Verify Your Email',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -66,7 +53,7 @@ const registerUser = async (req, res) => {
 
   try {
     // Attempt to send email
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     
     // Only create user in DB if email successfully sends
     const user = await User.create({
@@ -199,22 +186,9 @@ const sendEmailToUser = async (req, res) => {
     return res.status(400).json({ message: 'Please provide recipient email, subject, and message' });
   }
 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to: recipientEmail,
+    from: process.env.EMAIL_USER,
     replyTo: req.user.email,
     subject: `[Chatify] ${subject}`,
     html: `
@@ -230,7 +204,7 @@ const sendEmailToUser = async (req, res) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     
     let emailMessage = null;
     if (chatId) {
@@ -274,22 +248,9 @@ const forgotPassword = async (req, res) => {
   user.otpExpires = otpExpires;
   await user.save();
 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
+  const msg = {
     to: email,
+    from: process.env.EMAIL_USER,
     subject: 'Chatify - Password Reset OTP',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
@@ -305,7 +266,7 @@ const forgotPassword = async (req, res) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await sgMail.send(msg);
     res.status(200).json({ message: 'Password reset OTP sent to your email' });
   } catch (error) {
     console.error('Error sending email:', error);

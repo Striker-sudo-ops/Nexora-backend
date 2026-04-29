@@ -1,7 +1,8 @@
 const Chat = require('../models/Chat');
 const User = require('../models/User');
 const Message = require('../models/Message');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const accessChat = async (req, res) => {
   const { userId } = req.body;
@@ -272,17 +273,9 @@ const sendGroupEmail = async (req, res) => {
       const emails = chat.users.filter(u => u._id.toString() !== req.user._id.toString()).map(u => u.email);
       if (emails.length === 0) return res.status(200).json({ message: 'No other users in group to email' });
 
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-        tls: { rejectUnauthorized: false }
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
+      const msg = {
         to: emails.join(','),
+        from: process.env.EMAIL_USER,
         replyTo: req.user.email,
         subject: `[Chatify Group: ${chat.chatName}] ${subject}`,
         html: `
@@ -295,7 +288,7 @@ const sendGroupEmail = async (req, res) => {
         `
       };
 
-      await transporter.sendMail(mailOptions);
+      await sgMail.send(msg);
 
       let emailMessage = await Message.create({
         sender: req.user._id,
@@ -322,17 +315,9 @@ const sendGroupEmail = async (req, res) => {
       const adminEmails = chat.users.filter(u => adminIds.includes(u._id.toString()) && u._id.toString() !== req.user._id.toString()).map(u => u.email);
 
       if (adminEmails.length > 0) {
-        const transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-          tls: { rejectUnauthorized: false }
-        });
-
-        const mailOptions = {
-          from: process.env.EMAIL_USER,
+        const msg = {
           to: adminEmails.join(','),
+          from: process.env.EMAIL_USER,
           replyTo: req.user.email,
           subject: `[Approval Required] [Chatify Group: ${chat.chatName}] ${subject}`,
           html: `
@@ -346,7 +331,7 @@ const sendGroupEmail = async (req, res) => {
           `
         };
 
-        await transporter.sendMail(mailOptions);
+        await sgMail.send(msg);
       }
 
       let emailMessage = await Message.create({
@@ -388,17 +373,9 @@ const approveGroupEmail = async (req, res) => {
     const emails = chat.users.filter(u => u._id.toString() !== emailRequest.sender._id.toString()).map(u => u.email);
     let emailMessage = null;
     if (emails.length > 0) {
-      const transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-        tls: { rejectUnauthorized: false }
-      });
-
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
+      const msg = {
         to: emails.join(','),
+        from: process.env.EMAIL_USER,
         replyTo: emailRequest.sender.email,
         subject: `[Chatify Group: ${chat.chatName}] ${emailRequest.subject}`,
         html: `
@@ -412,7 +389,7 @@ const approveGroupEmail = async (req, res) => {
         `
       };
 
-      await transporter.sendMail(mailOptions);
+      await sgMail.send(msg);
       
       emailMessage = await Message.create({
         sender: req.user._id,
